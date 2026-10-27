@@ -6,6 +6,7 @@ import subprocess
 root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(root)
 os.chdir(root)
+os.environ["MPLBACKEND"] = "Agg"
 
 
 try:
