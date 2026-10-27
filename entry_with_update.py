@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 
 root = os.path.dirname(os.path.abspath(__file__))
@@ -29,18 +30,26 @@ try:
     merge_result, _ = repo.merge_analysis(remote_commit.id)
 
     if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE:
-        print("Already up-to-date")
+        print("[Update] Already up-to-date")
     elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD:
         local_branch.set_target(remote_commit.id)
         repo.head.set_target(remote_commit.id)
         repo.checkout_tree(repo.get(remote_commit.id))
         repo.reset(local_branch.target, pygit2.GIT_RESET_HARD)
-        print("Fast-forward merge")
+        print("[Update] Fast-forward merge succeeded.")
     elif merge_result & pygit2.GIT_MERGE_ANALYSIS_NORMAL:
-        print("Update failed - Did you modify any file?")
+        print("[Update] Skipped - local changes detected.")
+except ImportError:
+    # pygit2 not installed, fallback to git CLI
+    try:
+        git_res = subprocess.run(["git", "pull", "--ff-only"], capture_output=True, text=True, check=False)
+        if git_res.returncode == 0:
+            print("[Update] Git update succeeded via git CLI.")
+        else:
+            print("[Update] Already up-to-date or local modifications present.")
+    except Exception:
+        print("[Update] Git check skipped.")
 except Exception as e:
-    print('Update failed.')
-    print(str(e))
+    print(f"[Update] Skipped: {e}")
 
-print('Update succeeded.')
 from launch import *

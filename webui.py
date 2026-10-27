@@ -1117,6 +1117,11 @@ def dump_default_english_config():
 
 # dump_default_english_config()
 
+if args_manager.args.cloudflare:
+    from modules.cloudflare_tunnel import start_tunnel
+    port = args_manager.args.port or int(os.environ.get("GRADIO_SERVER_PORT", 7865))
+    start_tunnel(port)
+
 shared.gradio_root.launch(
     inbrowser=args_manager.args.in_browser,
     server_name=args_manager.args.listen,
